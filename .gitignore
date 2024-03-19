@@ -159,4 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Files and folders beside template.
 checkout.py
+algorythms/
+test_texts/
