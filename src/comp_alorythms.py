@@ -46,36 +46,48 @@ def rle_encode(data: str) -> str:
     Ecoding given string according to RLE algoritm.
     Denotes repetitive sequence as "<repeats_number>(symbol)
     and non-repetitive as "<non-repeats>(symbols)."
+
+    Raises TypeError if non-string is given,
+    and ValueError if string is less than 4 in curracters.
     '''
 
     validate_string(data)
 
     # Counters to count lenghts of (none) repetitive sequences.
-    cnt_repetitive: int = 1
-    cnt_non_repetitive: int = 0
+    cnt_rep: int = 1
+    cnt_non_rep: int = 1
     encoded: str = ''
 
     for i in range(len(data) - 1):
-        char: str = data[i]
-        next_char: str = data[i + 1]
-        if next_char == char:
-            if cnt_non_repetitive != 0:
-                encoded += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_repetitive,
+        curr: str = data[i]
+        next: str = data[i + 1]
+        if next == curr:
+            cnt_rep += 1
+            if cnt_non_rep != 1:
+                encoded += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_rep + 1,
                                            string=data)
-                cnt_non_repetitive = 0
-            cnt_repetitive += 1
+                cnt_non_rep = 1
         else:
-            if cnt_repetitive != 1:
-                encoded += get_rep_seq(char, length=cnt_repetitive)
-                cnt_repetitive = 1
-            cnt_non_repetitive += 1
+            if cnt_rep != 1:
+                encoded += get_rep_seq(curr, length=cnt_rep)
+                cnt_rep = 1
+                continue
+
+            next_next = data[i+2] if i+2 < len(data) else None
+            if next_next == next:
+                encoded += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_rep,
+                                           string=data)
+                cnt_non_rep = 1
+                continue
+
+            cnt_non_rep += 1
 
     last_seq: str = ''
-    if cnt_non_repetitive != 0:
-        last_seq += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_repetitive,
+    if cnt_non_rep != 1:
+        last_seq += get_non_rep_seq(end_of_seq_ind=i + 1, length=cnt_non_rep,
                                            string=data)
     else:
-        last_seq += get_rep_seq(char, length=cnt_repetitive)
+        last_seq += get_rep_seq(curr, length=cnt_rep)
 
     return encoded + last_seq
 
@@ -99,7 +111,7 @@ def get_non_rep_seq(end_of_seq_ind: int, length: int, string: str) -> None:
     start_of_seq_ind: int = end_of_seq_ind - length + 1
     non_rep_seq: str = string[start_of_seq_ind:end_of_seq_ind + 1]
 
-    return f'{length}({non_rep_seq})'
+    return f'{-length}({non_rep_seq})'
 
 
 def validate_string(data: str):
@@ -115,11 +127,14 @@ def validate_string(data: str):
         raise ValueError('Encoding data chould have at least 4 characters')
 
 
+def rle_decode():
+    raise NotImplementedError
+
+
 __all__: list[str] = ['rle_encode', 'rle_decode']
 
 
-# Manual testing and other horrible things here.
-
-data = 'AAAABBBBBBCAD'
-encoded = rle_encode(data)
-print(encoded)
+if __name__ == '__main__':
+    data = 'ККУРУТТ'
+    res = rle_encode(data)
+    print(res)
