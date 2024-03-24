@@ -49,6 +49,13 @@ def rle_encode(data: str) -> str:
 
     Raises TypeError if non-string is given,
     and ValueError if string is less than 4 in curracters.
+
+    Usage example:
+
+    rle_encode('aaaaa')
+    >>> 5(a)
+    rle_encode('abcaaa')
+    >>> -3(abc)3(a)
     '''
 
     validate_string(data)
@@ -63,23 +70,23 @@ def rle_encode(data: str) -> str:
         next: str = data[i + 1]
         if next == curr:
             cnt_rep += 1
-            if cnt_non_rep != 1:
+            if cnt_non_rep != 1:  # If non rep. sequence just ended.
                 encoded += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_rep + 1,
                                            string=data)
-                cnt_non_rep = 1
+                cnt_non_rep = 1   # Adding it into result
         else:
-            if cnt_rep != 1:
+            if cnt_rep != 1:      # If rep. sequence just ended.
                 encoded += get_rep_seq(curr, length=cnt_rep)
                 cnt_rep = 1
                 continue
-
-            next_next = data[i+2] if i+2 < len(data) else None
+            # Otherwise, it can be end of non-rep. sequence
+            next_next: str = data[i+2] if i+2 < len(data) else None
             if next_next == next:
                 encoded += get_non_rep_seq(end_of_seq_ind=i, length=cnt_non_rep,
                                            string=data)
                 cnt_non_rep = 1
                 continue
-
+            # Or just another character in non-rep sequence
             cnt_non_rep += 1
 
     last_seq: str = ''
@@ -127,14 +134,54 @@ def validate_string(data: str):
         raise ValueError('Encoding data chould have at least 4 characters')
 
 
-def rle_decode():
-    raise NotImplementedError
+def rle_decode(data: str) -> str:
+    '''
+    Decodes given RLE encoded string and returns it.
+
+    Raises TypeError if non-string is given,
+    and ValueError if string is less than 4 in curracters.
+
+    Usage example:
+    rle_decode('5(a)')
+    >>> aaaaa
+    rle_decode('-3(abc)3(a)')
+    >>> abcaaa
+    '''
+
+    validate_string(data)
+
+    decoded: str = ''
+    count: str = '' # Contains lenght of (non) rep sequence.
+    i: int = 0
+
+    while i != len(data):
+        if data[i] != '(':    # Writes number into count.
+            count += data[i]
+            i += 1
+            continue
+
+        # If curr char is "(", then it means a sequence.
+        if count[0] == '-':    # Non-rep. sequence case.
+            count = abs(int(count))
+            seq: str = data[i + 1:i + count + 1]
+            i = i + count + 2
+            count = ''
+        else:                  # Rep. sequence
+            count = abs(int(count))
+            seq: str = count * data[i + 1]
+            i += 3
+            count = ''
+
+        decoded += seq
+
+    return decoded
+
 
 
 __all__: list[str] = ['rle_encode', 'rle_decode']
 
 
 if __name__ == '__main__':
-    data = 'ККУРУТТ'
-    res = rle_encode(data)
+    data = '-3(abc)3(a)'
+    res = rle_decode(data)
     print(res)
