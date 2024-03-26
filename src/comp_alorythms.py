@@ -177,6 +177,28 @@ def rle_decode(data: str) -> str:
     return decoded
 
 
+# Huffman code functions and everything connected with it.
+
+def Huffman_encode(data: str) -> str:
+    '''
+    Encodes given string according to Huffman encoding algorithm,
+    and returns it.
+    '''
+
+    freq_table: dict[str, int] = get_frequency_table(data)
+
+
+def get_frequency_table(data: str|list) -> dict[str, int]:
+    '''
+    Taking an iteble object and returns a frequency table for it.
+    '''
+
+    freq_table: dict[str, int] = {}
+    for char in data:
+        freq_table[char] = freq_table.get(char, 0) + 1
+
+    return freq_table
+
 
 __all__: list[str] = ['rle_encode', 'rle_decode']
 

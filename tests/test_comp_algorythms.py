@@ -6,6 +6,7 @@ sys.path.append('C:\\Users\\зелим\\Desktop\\programing\\folders\\projects\\
 
 
 from src.comp_alorythms import *
+from src.comp_alorythms import get_frequency_table
 
 
 class TestRLEEncode:
@@ -147,3 +148,11 @@ class TestRLEDecode:
         assert '111AAA' == rle_decode('3(1)3(A)')
         assert 'KKYPYT' == rle_decode('2(K)-4(YPYT)')
         assert 'KKYPYTT' == rle_decode('2(K)-3(YPY)2(T)')
+
+
+class TestHuffmanEncode:
+
+    def test_get_frequency_table(self):
+        assert get_frequency_table('') == {}
+        assert get_frequency_table('a') == {'a':1}
+        assert get_frequency_table('aaaabcbbd') == {'a': 4, 'b': 3, 'c': 1, 'd': 1}
