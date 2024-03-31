@@ -22,6 +22,16 @@ A module containing compressing algorythms, such as:
 '''
 
 
+from collections import namedtuple
+from dataclasses import dataclass
+from typing import Any, Iterable, Self
+import heapq as hpq
+
+
+Node = namedtuple('Node', ('data', 'left', 'right'))
+Leaf = namedtuple('Leaf', ('data',))
+
+
 '''
 "rle_encode" and "rle_decode" are functions to  compress data
 according to RLE data compression alogrythm.
@@ -177,15 +187,80 @@ def rle_decode(data: str) -> str:
     return decoded
 
 
-# Huffman code functions and everything connected with it.
+# Huffman code functions and everything related to it.
 
-def Huffman_encode(data: str) -> str:
+def Huffman_encode(data: str) -> tuple[dict[str], Node]:
     '''
     Encodes given string according to Huffman encoding algorithm,
-    and returns it.
+    and returns tuple - (encoded: chars, codes: dict[char, code]).
     '''
 
     freq_table: dict[str, int] = get_frequency_table(data)
+    codes_tree: object = build_code_tree(freq_table)
+    codes: dict[str, int] = get_codes_from_tree(codes_tree, chars=freq_table.keys())
+
+    encoded: str = ''
+    for char in data:
+        encoded += codes[char]
+
+    return (encoded, codes)
+
+
+def build_code_tree(freq_table: dict[str, int]) -> tuple:
+    '''
+    Builds a Huffman coding tree for given frequency table
+    of characters, and returns tree as "Node" object.
+    If "freq_table" has only one character - returns Leaf.
+    '''
+
+    heap: list = [Leaf(data=(freq_table[char], char)) for char in freq_table]
+    hpq.heapify(heap)   # Building min heap to extract min nodes for O(1).
+
+    while len(heap) > 1:           # Taking 2 nodes, and creating it's parent node.
+        node1 = hpq.heappop(heap)  # Named tuple object can be compared by
+        node2 = hpq.heappop(heap)  # their fields (field "data" contains frequency).
+        freq1, char1 = node1.data  # They can be unpacked also.
+        freq2, char2 = node2.data
+        new_node: Node = Node(data=(freq1 + freq2, char1 + char2),
+                              left=node1, right=node2,)
+        hpq.heappush(heap, new_node)
+
+    return hpq.heappop(heap)       # Last left node is final tree.
+
+
+def get_codes_from_tree(tree: namedtuple, chars: Iterable) -> dict[str, str]:
+    '''
+    Takes tree of class 'Node' and Iterable object with chars which codes
+    will be searched, and returnes them as dictionary: {char1: code1...}
+    '''
+
+    codes: dict[str, str] = {}
+    for char in chars:
+        codes[char] = get_code(tree, char)
+
+    return codes
+
+
+def get_code(tree: Node, char: str) -> str:
+    '''
+    Function that gets symbol code from given code tree, and returns it.
+    '''
+
+    if isinstance(tree, Leaf):  # If table contains only one character
+        return '0'              # We assign 0 code to it
+
+    curr: Node = tree
+    code: str = ''
+
+    while curr.data[1] != char:      # data[1] is string with characters
+        if char in curr.left.data[1]:
+            code += '0'
+            curr = curr.left
+        else:
+            code += '1'
+            curr = curr.right
+
+    return code
 
 
 def get_frequency_table(data: str|list) -> dict[str, int]:
@@ -200,10 +275,8 @@ def get_frequency_table(data: str|list) -> dict[str, int]:
     return freq_table
 
 
-__all__: list[str] = ['rle_encode', 'rle_decode']
+
 
 
 if __name__ == '__main__':
-    data = '-3(abc)3(a)'
-    res = rle_decode(data)
-    print(res)
+    pass

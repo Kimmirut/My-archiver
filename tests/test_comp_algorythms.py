@@ -156,3 +156,95 @@ class TestHuffmanEncode:
         assert get_frequency_table('') == {}
         assert get_frequency_table('a') == {'a':1}
         assert get_frequency_table('aaaabcbbd') == {'a': 4, 'b': 3, 'c': 1, 'd': 1}
+
+    @pytest.fixture
+    def Node(self):
+        return namedtuple('Node', ('data', 'left', 'right'))
+
+    @pytest.fixture
+    def Leaf(self):
+        return namedtuple('Leaf', ('data',))
+
+    @pytest.fixture
+    def tree(self):
+        '''
+        codes tree as "Node" object for "aaaabbcd" string
+        with the following structure:
+
+                (abcd:8)
+                /      \
+            (a:4)      (bcd:4)
+                       /     \
+                   (b:2)     (cd:2)
+                             /    \
+                         (c:1)    (d:1)
+        '''
+
+        return Node(data=(8, 'abcd'), left=Leaf(data=(4, 'a')), right=Node(data=(4, 'bcd'), left=Leaf(data=(2, 'b')), right=Node(data=(2, 'cd'), left=Leaf(data=(1, 'c')), right=Leaf(data=(1, 'd')))))
+
+    def test_build_code_tree_1(self, tree):
+        freq_table: dict[str, int] = {'a': 4, 'b': 2, 'c': 1, 'd': 1}
+
+        assert build_code_tree(freq_table) == tree
+
+    # Edge cases.
+    def test_build_code_tree_one_symbol(self, Leaf):
+        freq_table: dict[str, int] = {'a': 3}
+
+        tree = Leaf(data=(3, 'a'))
+
+        assert build_code_tree(freq_table) == tree
+
+    def test_build_code_tree_one_symbol_2(self, Leaf):
+        freq_table: dict[str, int] = {'a': 1}
+
+        tree = Leaf(data=(1, 'a'))
+
+        assert build_code_tree(freq_table) == tree
+
+    def test_get_code(self, tree):
+        codes: dict = {
+            'a': '0', 'b': '10',
+            'c': '110', 'd': '111'
+        }
+
+        for char in codes:
+            assert get_code(tree, char) == codes[char]
+
+    def test_get_code_edge_case(self):
+        tree = Leaf(data=(1, 'a'))
+        assert get_code(tree, 'a') == '0'
+
+    def test_get_codes_from_tree(self, tree):
+        chars: tuple = ('a', 'b', 'c', 'd')
+        codes: dict = {'b': '10', 'a': '0', 'd': '111', 'c': '110'}
+
+        assert get_codes_from_tree(chars, tree) == codes
+
+    def test_get_codes_from_tree(self):
+        chars: tuple = ('a',)
+        tree = Leaf((1, 'a'))
+        codes: dict = {'a': '0'}
+
+        assert get_codes_from_tree(tree, chars) == codes
+
+    def test_Huffman_encode(self):
+        data: str = 'aaaabbcd'
+        encoded, codes = Huffman_encode(data)
+
+        assert codes == {'a': '0', 'b': '10', 'c': '110', 'd': '111'}
+        assert encoded == '00001010110111'
+
+    def test_Huffman_encode_edge_case_1(self):
+        data: str = 'aaaa'
+        encoded, codes = Huffman_encode(data)
+
+        assert codes == {'a': '0'}
+        assert encoded == '0000'
+
+    def test_Huffman_encode_edge_case_2(self):
+        data: str = 'a'
+        encoded, codes = Huffman_encode(data)
+
+        assert codes == {'a': '0'}
+        assert encoded == '0'
