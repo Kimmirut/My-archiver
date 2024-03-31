@@ -273,10 +273,3 @@ def get_frequency_table(data: str|list) -> dict[str, int]:
         freq_table[char] = freq_table.get(char, 0) + 1
 
     return freq_table
-
-
-
-
-
-if __name__ == '__main__':
-    pass
