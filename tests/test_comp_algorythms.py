@@ -232,19 +232,60 @@ class TestHuffmanEncode:
         data: str = 'aaaabbcd'
         encoded, codes = Huffman_encode(data)
 
-        assert codes == {'a': '0', 'b': '10', 'c': '110', 'd': '111'}
+        assert codes == {'0': 'a', '10': 'b', '110': 'c', '111': 'd'}
         assert encoded == '00001010110111'
 
     def test_Huffman_encode_edge_case_1(self):
         data: str = 'aaaa'
         encoded, codes = Huffman_encode(data)
 
-        assert codes == {'a': '0'}
+        assert codes == {'0': 'a'}
         assert encoded == '0000'
 
     def test_Huffman_encode_edge_case_2(self):
         data: str = 'a'
         encoded, codes = Huffman_encode(data)
 
-        assert codes == {'a': '0'}
+        assert codes == {'0': 'a'}
         assert encoded == '0'
+
+
+class TestHuffmanDecode:
+
+    def test_invert_dict(self):
+        d = {}
+        invert_dict(d)
+        assert d == {}
+
+        d = {'a': 1}
+        invert_dict(d)
+        assert d == {1: 'a'}
+
+        d = {'a': '1', 'b': '2', 'c': '3'}
+        invert_dict(d)
+        assert d == {'1': 'a', '2': 'b', '3': 'c'}
+
+    def test_Huffman_decode_edge_case1(self):
+        assert Huffman_decode('', {}) == ''
+
+    def test_Huffman_decode_edge_case2(self):
+        assert Huffman_decode('0', {'0': 'a'}) == 'a'
+
+    def test_Huffman_decode_edge_case3(self):
+        assert Huffman_decode('0000', {'0': 'a'}) == 'aaaa'
+
+    def test_Huffman_decode1(self):
+        encoded = '00001010110111'
+        codes = {'0': 'a', '10': 'b', '110': 'c', '111': 'd'}
+
+        decoded = Huffman_decode(encoded, codes)
+
+        assert decoded == 'aaaabbcd'
+
+    def test_Huffman_decode2(self):
+        encoded = '100010011001101101101000000000101010101111111111111'
+        codes = {'1000': '1', '1001': '2', '101': '3', '00': '4', '01': '5', '11': '6'}
+
+        decoded = Huffman_decode(encoded, codes)
+
+        assert decoded == '122333444455555666666'

@@ -23,7 +23,6 @@ A module containing compressing algorythms, such as:
 
 
 from collections import namedtuple
-from dataclasses import dataclass
 from typing import Any, Iterable, Self
 import heapq as hpq
 
@@ -189,11 +188,13 @@ def rle_decode(data: str) -> str:
 
 # Huffman code functions and everything related to it.
 
-def Huffman_encode(data: str) -> tuple[dict[str], Node]:
+def Huffman_encode(data: str) -> tuple[str, dict[str]]:
     '''
     Encodes given string according to Huffman encoding algorithm,
-    and returns tuple - (encoded: chars, codes: dict[char, code]).
+    and returns tuple - (encoded: 'chars', codes: dict[code, char]).
     '''
+
+    if data == '': return '', {}  # edge case.
 
     freq_table: dict[str, int] = get_frequency_table(data)
     codes_tree: object = build_code_tree(freq_table)
@@ -203,7 +204,34 @@ def Huffman_encode(data: str) -> tuple[dict[str], Node]:
     for char in data:
         encoded += codes[char]
 
+    invert_dict(codes)
+
     return (encoded, codes)
+
+
+def Huffman_decode(encoded: str, codes: dict[str]) -> str:
+    '''
+    Takes arguments that are returned by Huffman_encode function,
+    encoded, and codes, and return decoded version of encoded,
+    usnig given codes table.
+
+    Example of usage:
+
+    >>> encoded, codes = Huffman_encode('aaaabbcd')
+    >>> Huffman_decode(encoded, codes)
+    aaaabbcd
+    '''
+
+    decoded: str = ''
+    code: str = ''
+
+    for char in encoded:
+        code += char
+        if code in codes:
+            decoded += codes[code]
+            code = ''
+
+    return decoded
 
 
 def build_code_tree(freq_table: dict[str, int]) -> tuple:
@@ -273,3 +301,15 @@ def get_frequency_table(data: str|list) -> dict[str, int]:
         freq_table[char] = freq_table.get(char, 0) + 1
 
     return freq_table
+
+
+def invert_dict(d: dict) -> dict:
+    '''
+    Takes a dictionary and swaps it's keys with their values on place
+    '''
+
+    for key in list(d):
+        d[d[key]] = key
+        del d[key]
+
+    return d
