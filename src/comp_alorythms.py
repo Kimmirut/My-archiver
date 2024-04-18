@@ -30,6 +30,8 @@ import heapq as hpq
 Node = namedtuple('Node', ('data', 'left', 'right'))
 Leaf = namedtuple('Leaf', ('data',))
 
+Segment = namedtuple('Segment', ('start', 'end', 'char'))
+
 
 '''
 "rle_encode" and "rle_decode" are functions to  compress data
@@ -313,3 +315,62 @@ def invert_dict(d: dict) -> dict:
         del d[key]
 
     return d
+
+
+def ariphmetic_encode(data: str) -> float:
+    '''
+    Takes string and encodes it according to ariphmetic compression
+    algorithm.
+    '''
+
+    freq_table: dict[str, float] = get_frequency_table_float(data)
+    working_segment: Segment = Segment(0.0, 1, '')
+
+    for char in data:
+        subsegments: list[Segment] = get_subsegments(data, freq_table)
+
+        for subsegment in subsegments:
+            if subsegment.char == char:
+                working_segment = subsegment
+                break
+
+    return get_shortest_from_segment(working_segment)
+
+
+def get_frequency_table_float(data: str|list) -> dict[str, float]:
+    '''
+    ####
+    '''
+
+    freq_table: dict[str, int] = get_frequency_table(data)
+
+    return {char: freq_table[char] / len(freq_table) for char in freq_table}
+
+
+def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> Segment:
+    '''
+    *Ariphmetic compression.
+
+    Returns all subsegments of given segment depending on frequency table.
+    '''
+
+    subsegments: list[Segment] = []
+    curr_point: segment.start    # Current end of segments sequence
+
+    char: str
+    for char in freq_table:
+        start, end = curr_point, curr_point + freq_table[char]
+        subsegments.append(Segment(start, end, char))
+        curr_point = end
+
+    return subsegments
+
+def get_shortest_from_segment(segment: Segment) -> float:
+    '''
+    Takes a segment of "Segment" type and returns shortest
+    floating number from it.
+    '''
+
+    shortest = str(segment.end)[:3]
+
+    return float(shortest)
