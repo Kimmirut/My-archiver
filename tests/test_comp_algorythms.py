@@ -289,3 +289,136 @@ class TestHuffmanDecode:
         decoded = Huffman_decode(encoded, codes)
 
         assert decoded == '122333444455555666666'
+
+class TestAriphmeticEncode:
+    # TODO: Add fixtures.
+
+    def test_get_frequency_table_float(self):
+        data = 'abac'
+        freq_table_float = {
+            'a': 0.50,
+            'b': 0.25,
+            'c': 0.25,
+        }
+
+        assert get_frequency_table_float(data) == freq_table_float
+
+    def test_get_frequency_table_float_edge_case1(self):
+        data = 'a'
+        freq_table_float = {
+            'a': 0.100,
+        }
+
+        assert get_frequency_table_float(data) == freq_table_float
+
+    def test_get_frequency_table_float_edge_case1(self):
+        data = ''
+        freq_table_float = {}
+
+        assert get_frequency_table_float(data) == freq_table_float
+
+    def test_get_subsegments(self):
+        freq_table = {
+            'a': 0.50,
+            'b': 0.25,
+            'c': 0.25,
+        }
+
+        segment = Segment(0.0, 1.0, '')
+
+        subsegments = [
+            Segment(0.0, 0.5, 'a'),
+            Segment(0.5, 0.75, 'b'),
+            Segment(0.75, 1.0, 'c'),
+        ]
+
+        assert get_subsegments(segment, freq_table) == subsegments
+
+    def test_get_subsegments_edge_case_2(self):
+        freq_table = {}
+
+        segment = Segment(0.0, 1.0, '')
+
+        subsegments = []
+
+        assert get_subsegments(segment, freq_table) == subsegments
+
+    def test_get_subsegments_edge_case_2(self):
+        freq_table = {
+            'a': 1.0,
+        }
+
+        segment = Segment(0.0, 1.0, '')
+
+        subsegments = [
+            Segment(0.0, 1.0, 'a'),
+        ]
+
+        assert get_subsegments(segment, freq_table) == subsegments
+
+    def test_get_subsegments_full(self):
+        # full cycle for data = abac.
+
+        freq_table = {
+            'a': 0.50,
+            'b': 0.25,
+            'c': 0.25,
+        }
+
+        # First divide.
+
+        working_segment = Segment(0.0, 1.0, '')
+        subsegments = [
+            Segment(start=0.0, end=0.5, char='a'),
+            Segment(start=0.5, end=0.75, char='b'),
+            Segment(start=0.75, end=1.0, char='c'),
+        ]
+
+        assert get_subsegments(working_segment, freq_table) == subsegments
+
+        #choosing "a"
+
+        # Second divide. Segment with "a" chosen as working.
+
+        working_segment = Segment(start=0.0, end=0.5, char='a')
+        subsegments = [
+            Segment(start=0.0, end=0.25, char='a'),
+            Segment(start=0.25, end=0.375, char='b'),
+            Segment(start=0.375, end=0.5, char='c'),
+        ]
+
+        #choosing "b"
+
+        assert get_subsegments(working_segment, freq_table) == subsegments
+
+        # Third divide. Segment with "b" chosen as working.
+
+        working_segment = Segment(start=0.25, end=0.375, char='b')
+        subsegments = [
+            Segment(start=0.25, end=0.3125, char='a'),
+            Segment(start=0.3125, end=0.34375, char='b'),
+            Segment(start=0.34375, end=0.375, char='c'),
+        ]
+
+        assert get_subsegments(working_segment, freq_table) == subsegments
+        # choosing "a"
+
+        # Fourth divide. Segment with "a" chosen as working.
+
+        working_segment = Segment(start=0.25, end=0.3125, char='a')
+        subsegments = [
+            Segment(start=0.25, end=0.28125, char='a'),
+            Segment(start=0.28125, end=0.296875, char='b'),
+            Segment(start=0.296875, end=0.3125, char='c'),
+        ]
+
+        assert get_subsegments(working_segment, freq_table) == subsegments
+
+        #choosing "c"
+
+        # Number from c is result of encoding.
+
+    def test_ariphmetic_encode(self):
+        data = 'abac'
+        assert 0.296875 <= ariphmetic_encode(data) <= 0.3125
+

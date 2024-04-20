@@ -324,30 +324,32 @@ def ariphmetic_encode(data: str) -> float:
     '''
 
     freq_table: dict[str, float] = get_frequency_table_float(data)
-    working_segment: Segment = Segment(0.0, 1, '')
+    working_segment: Segment = Segment(0.0, 1.0, '')
 
     for char in data:
-        subsegments: list[Segment] = get_subsegments(data, freq_table)
+        subsegments: list[Segment] = get_subsegments(working_segment, freq_table)
 
         for subsegment in subsegments:
             if subsegment.char == char:
                 working_segment = subsegment
                 break
 
+    return working_segment
     return get_shortest_from_segment(working_segment)
 
 
 def get_frequency_table_float(data: str|list) -> dict[str, float]:
     '''
-    ####
+    Takes string or list and returns it's frequency table
+    with percentage of every symbol of the string.
     '''
 
     freq_table: dict[str, int] = get_frequency_table(data)
 
-    return {char: freq_table[char] / len(freq_table) for char in freq_table}
+    return {char: freq_table[char] / len(data) for char in freq_table}
 
 
-def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> Segment:
+def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> list[Segment]:
     '''
     *Ariphmetic compression.
 
@@ -355,11 +357,11 @@ def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> Segment:
     '''
 
     subsegments: list[Segment] = []
-    curr_point: segment.start    # Current end of segments sequence
+    curr_point: float = segment.start    # Current end of segments sequence
 
-    char: str
     for char in freq_table:
-        start, end = curr_point, curr_point + freq_table[char]
+        working_segment_length: float = (segment.end - segment.start)
+        start, end = curr_point, curr_point + freq_table[char] * working_segment_length
         subsegments.append(Segment(start, end, char))
         curr_point = end
 
