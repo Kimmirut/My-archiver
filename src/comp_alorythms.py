@@ -23,6 +23,7 @@ A module containing compressing algorythms, such as:
 
 
 from collections import namedtuple
+from decimal import Decimal
 from typing import Any, Iterable, Self
 import heapq as hpq
 
@@ -323,8 +324,8 @@ def ariphmetic_encode(data: str) -> float:
     algorithm.
     '''
 
-    freq_table: dict[str, float] = get_frequency_table_float(data)
-    working_segment: Segment = Segment(0.0, 1.0, '')
+    freq_table: dict[str, float] = get_frequency_table_decimal(data)
+    working_segment: Segment = Segment(Decimal(0.0), Decimal(1.0), '')
 
     for char in data:
         subsegments: list[Segment] = get_subsegments(working_segment, freq_table)
@@ -334,11 +335,10 @@ def ariphmetic_encode(data: str) -> float:
                 working_segment = subsegment
                 break
 
-    return working_segment
     return get_shortest_from_segment(working_segment)
 
 
-def get_frequency_table_float(data: str|list) -> dict[str, float]:
+def get_frequency_table_decimal(data: str|list) -> dict[str, float]:
     '''
     Takes string or list and returns it's frequency table
     with percentage of every symbol of the string.
@@ -346,7 +346,7 @@ def get_frequency_table_float(data: str|list) -> dict[str, float]:
 
     freq_table: dict[str, int] = get_frequency_table(data)
 
-    return {char: freq_table[char] / len(data) for char in freq_table}
+    return {char: Decimal(freq_table[char]) / Decimal(len(data)) for char in freq_table}
 
 
 def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> list[Segment]:
@@ -357,7 +357,7 @@ def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> list[Segm
     '''
 
     subsegments: list[Segment] = []
-    curr_point: float = segment.start    # Current end of segments sequence
+    curr_point: Decimal = segment.start    # Current end of segments sequence
 
     for char in freq_table:
         working_segment_length: float = (segment.end - segment.start)
@@ -367,12 +367,14 @@ def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> list[Segm
 
     return subsegments
 
-def get_shortest_from_segment(segment: Segment) -> float:
-    '''
-    Takes a segment of "Segment" type and returns shortest
-    floating number from it.
-    '''
+def get_shortest_from_segment(segment: Segment) -> Decimal:
+    start: str = str(segment.start)
+    end: str = str(segment.end)
 
-    shortest = str(segment.end)[:3]
+    indices = range(2, len(start))  # skipping "0." part of flaoting number
+    for i, digit_1, digit_2 in zip(indices, start[2:], end[2:]):
+        n: Decimal = Decimal(start[:i] + str(int(digit_1) + 1)) # incrementing i-digit of start and cutting the rest
+        if n <= Decimal(end):
+            return n
 
-    return float(shortest)
+    return Decimal(0)
