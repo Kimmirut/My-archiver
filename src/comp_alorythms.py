@@ -318,13 +318,14 @@ def invert_dict(d: dict) -> dict:
     return d
 
 
-def ariphmetic_encode(data: str) -> float:
+def ariphmetic_encode(data: str) -> tuple[Decimal, dict[str, Decimal], int]:
     '''
     Takes string and encodes it according to ariphmetic compression
-    algorithm.
+    algorithm, returns encoded string, it's characters frequency table
+    and length of given string.
     '''
 
-    freq_table: dict[str, float] = get_frequency_table_decimal(data)
+    freq_table: dict[str, Decimal] = get_frequency_table_decimal(data)
     working_segment: Segment = Segment(Decimal(0.0), Decimal(1.0), '')
 
     for char in data:
@@ -335,7 +336,7 @@ def ariphmetic_encode(data: str) -> float:
                 working_segment = subsegment
                 break
 
-    return get_shortest_from_segment(working_segment)
+    return get_shortest_from_segment(working_segment), freq_table, len(data)
 
 
 def get_frequency_table_decimal(data: str|list) -> dict[str, float]:
@@ -367,6 +368,7 @@ def get_subsegments(segment: Segment, freq_table: dict[str, float]) -> list[Segm
 
     return subsegments
 
+
 def get_shortest_from_segment(segment: Segment) -> Decimal:
     start: str = str(segment.start)
     end: str = str(segment.end)
@@ -378,3 +380,26 @@ def get_shortest_from_segment(segment: Segment) -> Decimal:
             return n
 
     return Decimal(0)
+
+
+def ariphmetic_decode(encoded: Decimal, fr_table: dict[str, Decimal], encoded_length: int) -> str:
+    '''
+    Takes encoded string, it's frequency table, and length then decodes and returns it.
+    '''
+
+    decoded: str = ''
+    working_segment: Segment = Segment(Decimal(0.0), Decimal(1.0), '')
+
+    for _ in range(encoded_length):
+        segments: list[Segment] = get_subsegments(working_segment, fr_table)
+        for segment in segments:
+            if segment.start <= encoded <= segment.end:
+                working_segment = segment
+                decoded += segment.char
+                break
+
+    return decoded
+
+
+
+

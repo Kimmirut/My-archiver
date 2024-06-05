@@ -427,3 +427,16 @@ class TestAriphmeticEncode:
 
         for segment, shortest in zip(segments, shortests):
             assert segment == shortest
+
+class TestAriphmeticDecode:
+
+    def test_1(self):
+        data = 'abac'
+        encoded = (Decimal('0.3'), {'a': Decimal('0.5'), 'b': Decimal('0.25'), 'c': Decimal('0.25')}, 4)
+
+        assert data == ariphmetic_decode(encoded)
+
+    def test_2(self):
+        data = ''
+        encoded = (Decimal('0'), {}, 0)
+        assert data == encoded
