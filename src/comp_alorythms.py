@@ -401,5 +401,42 @@ def ariphmetic_decode(encoded: Decimal, fr_table: dict[str, Decimal], encoded_le
     return decoded
 
 
+def lz77_encode(input_str, window_size=12, lookahead_buffer_size=5):
+    compressed = []
+    i = 0
+    while i < len(input_str):
+        match = ''
+        match_length = 0
+        match_distance = 0
 
+        window_start = max(0, i - window_size)
+        window_end = i
+        search_window = input_str[window_start:i]
 
+        for j in range(lookahead_buffer_size, 0, -1):
+            substring = input_str[i:i + j]
+            if substring in search_window:
+                match = substring
+                match_length = len(substring)
+                match_distance = i - search_window.rindex(substring)
+                break
+
+        if match_length == 0:
+            compressed.append((0, 0, input_str[i]))
+            i += 1
+        else:
+            compressed.append((match_distance, match_length, ''))
+            i += match_length
+
+    return compressed
+
+def lz77_decode(compressed):
+    decompressed = ''
+    for item in compressed:
+        if item[0] == 0:
+            decompressed += item[2]
+        else:
+            start = len(decompressed) - item[0]
+            length = item[1]
+            decompressed += decompressed[start:start + length]
+    return decompressed
